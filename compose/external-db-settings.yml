@@ -1,0 +1,13 @@
+# Description: Use external PostgreSQL database
+# Variables: POSTGRES_HOST
+
+services:
+  musicbrainz:
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+  indexer:
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+  lmd:
+    environment:
+      DATABASE_HOST: ${POSTGRES_HOST}

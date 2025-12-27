@@ -1,0 +1,29 @@
+# Description: Local volume bindings
+# Note: These are overridden by nfs-volumes.yml for solrdata/solrdump
+
+volumes:
+  mqdata:
+    driver_opts:
+      type: none
+      device: /opt/docker/musicbrainz-docker/volumes/mqdata
+      o: bind
+  pgdata:
+    driver_opts:
+      type: none
+      device: /opt/docker/musicbrainz-docker/volumes/pgdata
+      o: bind
+  solrdata:
+    driver_opts:
+      type: none
+      device: /opt/docker/musicbrainz-docker/volumes/solrdata
+      o: bind
+  dbdump:
+    driver_opts:
+      type: none
+      device: /opt/docker/musicbrainz-docker/volumes/dbdump
+      o: bind
+  solrdump:
+    driver_opts:
+      type: none
+      device: /opt/docker/musicbrainz-docker/volumes/solrdump
+      o: bind

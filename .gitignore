@@ -1,0 +1,23 @@
+# Secrets - NEVER commit these
+.env
+secrets/
+*.secret
+
+# Local overrides
+local-*.yml
+*.local.yml
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

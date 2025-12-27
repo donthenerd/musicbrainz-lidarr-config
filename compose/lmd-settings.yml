@@ -1,0 +1,92 @@
+# Description: Lidarr Metadata Server (LMD) configuration
+# Variables: POSTGRES_HOST, POSTGRES_USER, POSTGRES_PASSWORD,
+#            SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URL,
+#            FANART_KEY, LASTFM_KEY, LASTFM_SECRET, TADB_KEY
+
+volumes:
+  lmdconfig:
+    driver_opts:
+      type: none
+      device: /opt/docker/musicbrainz-docker/volumes/lmdconfig
+      o: bind
+    driver: local
+
+services:
+  lmd:
+    image: blampe/lidarr.metadata:70a9707
+    ports:
+      - 5001:5001
+    environment:
+      # General settings
+      DEBUG: true
+      PRODUCTION: false
+      USE_CACHE: true
+      ENABLE_STATS: false
+      ROOT_PATH: ""
+      IMAGE_CACHE_HOST: "theaudiodb.com"
+      EXTERNAL_TIMEOUT: 1000
+      INVALIDATE_APIKEY: ""
+
+      # Redis connection (uses Docker Compose service name)
+      REDIS_HOST: "redis"
+      REDIS_PORT: 6379
+
+      # Fanart.tv API
+      FANART_KEY: "${FANART_KEY}"
+      PROVIDERS__FANARTTVPROVIDER__0__0: "${FANART_KEY}"
+
+      # Spotify API
+      SPOTIFY_ID: "${SPOTIFY_CLIENT_ID}"
+      SPOTIFY_SECRET: "${SPOTIFY_CLIENT_SECRET}"
+      SPOTIFY_REDIRECT_URL: "${SPOTIFY_REDIRECT_URL}"
+      PROVIDERS__SPOTIFYPROVIDER__1__CLIENT_ID: "${SPOTIFY_CLIENT_ID}"
+      PROVIDERS__SPOTIFYPROVIDER__1__CLIENT_SECRET: "${SPOTIFY_CLIENT_SECRET}"
+      PROVIDERS__SPOTIFYAUTHPROVIDER__1__CLIENT_ID: "${SPOTIFY_CLIENT_ID}"
+      PROVIDERS__SPOTIFYAUTHPROVIDER__1__CLIENT_SECRET: "${SPOTIFY_CLIENT_SECRET}"
+      PROVIDERS__SPOTIFYAUTHPROVIDER__1__REDIRECT_URI: "${SPOTIFY_REDIRECT_URL}"
+
+      # TheAudioDB API
+      TADB_KEY: "${TADB_KEY:-2}"
+      PROVIDERS__THEAUDIODBPROVIDER__0__0: "${TADB_KEY:-2}"
+
+      # Last.fm API
+      LASTFM_KEY: "${LASTFM_KEY}"
+      LASTFM_SECRET: "${LASTFM_SECRET}"
+
+      # Solr search (uses Docker Compose service name)
+      PROVIDERS__SOLRSEARCHPROVIDER__1__SEARCH_SERVER: "http://search:8983/solr"
+
+      # Primary database connection
+      DB_HOST: "${POSTGRES_HOST}"
+      DB_PORT: 5432
+      DB_USER: "${POSTGRES_USER}"
+      DB_PASSWORD: "${POSTGRES_PASSWORD}"
+      DB_NAME: "musicbrainz_db"
+
+      # Cache database configuration
+      POSTGRES_CACHE_HOST: "${POSTGRES_HOST}"
+      POSTGRES_CACHE_PORT: 5432
+      POSTGRES_CACHE_USER: "${POSTGRES_USER}"
+      POSTGRES_CACHE_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_CACHE_DB: "lm_cache_db"
+
+      # MusicBrainz database provider
+      PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_HOST: "${POSTGRES_HOST}"
+      PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_PORT: 5432
+      PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_USER: "${POSTGRES_USER}"
+      PROVIDERS__MUSICBRAINZDBPROVIDER__1__DB_PASSWORD: "${POSTGRES_PASSWORD}"
+
+      # Cache endpoints (all point to external PostgreSQL)
+      CACHE_CONFIG__fanart__endpoint: "${POSTGRES_HOST}"
+      CACHE_CONFIG__tadb__endpoint: "${POSTGRES_HOST}"
+      CACHE_CONFIG__wikipedia__endpoint: "${POSTGRES_HOST}"
+      CACHE_CONFIG__artist__endpoint: "${POSTGRES_HOST}"
+      CACHE_CONFIG__album__endpoint: "${POSTGRES_HOST}"
+      CACHE_CONFIG__spotify__endpoint: "${POSTGRES_HOST}"
+    restart: unless-stopped
+    volumes:
+      - lmdconfig:/config
+    depends_on:
+      - mq
+      - search
+      - redis

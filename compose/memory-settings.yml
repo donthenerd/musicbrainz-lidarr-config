@@ -1,0 +1,12 @@
+# Description: Memory allocation for database and search
+# Variables: POSTGRES_SHARED_BUFFERS, SOLR_HEAP, SOLR_UID, SOLR_GID
+
+services:
+  db:
+    command: postgres -c "shared_buffers=${POSTGRES_SHARED_BUFFERS:-4GB}" -c "shared_preload_libraries=pg_amqp.so"
+  search:
+    environment:
+      - SOLR_HEAP=${SOLR_HEAP:-16g}
+    volumes:
+      - /var/solr-logs:/var/solr/logs
+    user: "${SOLR_UID:-8675309}:${SOLR_GID:-8675309}"

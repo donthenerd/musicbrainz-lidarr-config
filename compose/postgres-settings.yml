@@ -1,0 +1,17 @@
+# Description: PostgreSQL credentials and web server host
+# Variables: POSTGRES_USER, POSTGRES_PASSWORD, MUSICBRAINZ_IP
+
+services:
+  musicbrainz:
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      MUSICBRAINZ_WEB_SERVER_HOST: "${MUSICBRAINZ_IP}"
+  db:
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+  indexer:
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"

@@ -1,0 +1,16 @@
+# Description: NFS volumes for Solr data persistence
+# Variables: NFS_HOST, NFS_SOLRDATA_PATH, NFS_SOLRDUMP_PATH
+
+volumes:
+  solrdata:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFS_HOST},rw,noatime,async,vers=3,hard,nolock,proto=tcp,timeo=600
+      device: ":${NFS_SOLRDATA_PATH}"
+  solrdump:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=${NFS_HOST},rw,noatime,async,vers=3,hard,nolock,proto=tcp,timeo=600
+      device: ":${NFS_SOLRDUMP_PATH}"

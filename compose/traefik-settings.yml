@@ -1,0 +1,26 @@
+# Description: Traefik reverse proxy integration for LMD
+# Variables: TRAEFIK_DOMAIN
+
+networks:
+  proxy:
+    external: true
+
+services:
+  lmd:
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.musicbrainz.entrypoints=http"
+      - "traefik.http.routers.musicbrainz.rule=Host(`${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.middlewares.musicbrainz-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.musicbrainz.middlewares=musicbrainz-https-redirect"
+      - "traefik.http.routers.musicbrainz-secure.entrypoints=https"
+      - "traefik.http.routers.musicbrainz-secure.rule=Host(`${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.musicbrainz-secure.tls=true"
+      - "traefik.http.routers.musicbrainz-secure.tls.certresolver=cloudflare"
+      - "traefik.http.routers.musicbrainz-secure.service=musicbrainz"
+      - "traefik.http.services.musicbrainz.loadbalancer.server.port=5001"
+      - "traefik.docker.network=proxy"
+      - "com.centurylinklabs.watchtower.enable=true"
