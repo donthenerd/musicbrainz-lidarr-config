@@ -1,4 +1,4 @@
-# Description: Traefik reverse proxy integration for LMD
+# Description: Traefik reverse proxy integration for LMD with path stripping
 # Variables: TRAEFIK_DOMAIN
 
 networks:
@@ -12,15 +12,21 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
+      # HTTP redirect to HTTPS
       - "traefik.http.routers.musicbrainz.entrypoints=http"
       - "traefik.http.routers.musicbrainz.rule=Host(`${TRAEFIK_DOMAIN}`)"
       - "traefik.http.middlewares.musicbrainz-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.musicbrainz.middlewares=musicbrainz-https-redirect"
+      # HTTPS router with path stripping
       - "traefik.http.routers.musicbrainz-secure.entrypoints=https"
       - "traefik.http.routers.musicbrainz-secure.rule=Host(`${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.musicbrainz-secure.tls=true"
       - "traefik.http.routers.musicbrainz-secure.tls.certresolver=cloudflare"
       - "traefik.http.routers.musicbrainz-secure.service=musicbrainz"
+      # Strip /api/v0.4 prefix for Lidarr compatibility
+      - "traefik.http.middlewares.musicbrainz-strip.stripprefix.prefixes=/api/v0.4"
+      - "traefik.http.routers.musicbrainz-secure.middlewares=musicbrainz-strip"
+      # Service config
       - "traefik.http.services.musicbrainz.loadbalancer.server.port=5001"
       - "traefik.docker.network=proxy"
       - "com.centurylinklabs.watchtower.enable=true"
