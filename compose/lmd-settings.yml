@@ -23,7 +23,7 @@ services:
       USE_CACHE: true
       ENABLE_STATS: false
       ROOT_PATH: ""
-      IMAGE_CACHE_HOST: "theaudiodb.com"
+      IMAGE_CACHE_HOST: "images.lidarr.audio"
       EXTERNAL_TIMEOUT: 1000
       INVALIDATE_APIKEY: ""
 
@@ -86,6 +86,8 @@ services:
     restart: unless-stopped
     volumes:
       - lmdconfig:/config
+      # Mount patched provider.py to fix fanart.tv URL bug (trailing slash issue)
+      - /opt/docker/musicbrainz-docker/local/patches/provider.py:/metadata/lidarrmetadata/provider.py:ro
     depends_on:
       - mq
       - search

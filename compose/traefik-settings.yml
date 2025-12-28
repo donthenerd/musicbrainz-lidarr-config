@@ -1,5 +1,4 @@
-# Description: Traefik reverse proxy integration for LMD with path stripping
-# Variables: TRAEFIK_DOMAIN
+# Description: Traefik integration for metadata server with path stripping
 
 networks:
   proxy:
@@ -14,12 +13,12 @@ services:
       - "traefik.enable=true"
       # HTTP redirect to HTTPS
       - "traefik.http.routers.musicbrainz.entrypoints=http"
-      - "traefik.http.routers.musicbrainz.rule=Host(`${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.musicbrainz.rule=Host(`musicbrainz.digmyjam.com`)"
       - "traefik.http.middlewares.musicbrainz-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.musicbrainz.middlewares=musicbrainz-https-redirect"
       # HTTPS router with path stripping
       - "traefik.http.routers.musicbrainz-secure.entrypoints=https"
-      - "traefik.http.routers.musicbrainz-secure.rule=Host(`${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.musicbrainz-secure.rule=Host(`musicbrainz.digmyjam.com`)"
       - "traefik.http.routers.musicbrainz-secure.tls=true"
       - "traefik.http.routers.musicbrainz-secure.tls.certresolver=cloudflare"
       - "traefik.http.routers.musicbrainz-secure.service=musicbrainz"
@@ -30,3 +29,14 @@ services:
       - "traefik.http.services.musicbrainz.loadbalancer.server.port=5001"
       - "traefik.docker.network=proxy"
       - "com.centurylinklabs.watchtower.enable=true"
+      # api.lidarr.audio routing (for Lidarr internal DNS redirect)
+      - "traefik.http.routers.lidarr-api.entrypoints=https"
+      - "traefik.http.routers.lidarr-api.rule=Host(`api.lidarr.audio`)"
+      - "traefik.http.routers.lidarr-api.tls=true"
+      - "traefik.http.routers.lidarr-api.service=musicbrainz"
+      - "traefik.http.routers.lidarr-api.middlewares=musicbrainz-strip"
+      # api.lidarr.audio HTTP route (internal traffic, no TLS needed)
+      - "traefik.http.routers.lidarr-api-http.entrypoints=http"
+      - "traefik.http.routers.lidarr-api-http.rule=Host(`api.lidarr.audio`)"
+      - "traefik.http.routers.lidarr-api-http.service=musicbrainz"
+      - "traefik.http.routers.lidarr-api-http.middlewares=musicbrainz-strip"
