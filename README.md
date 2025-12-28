@@ -9,9 +9,9 @@ Configuration-as-code for the local MusicBrainz mirror and Lidarr Metadata Serve
 - Local Solr search is fast (10-30ms vs 5-10s from official API)
 - Pi-hole DNS redirects `api.lidarr.audio` to local LMD
 - HTTPS endpoint: `https://musicbrainz.digmyjam.com/api/v0.4`
+- TADB image URLs fixed (see Key Fixes #5 below)
 
 **Known Issues:**
-- Some cached searches may show empty images from before the fix - these will refresh over time
 - Replication cron needs to be reconfigured after container restarts
 
 ## Architecture
@@ -58,6 +58,27 @@ This allows Lidarr to use our local LMD with fast Solr search.
 
 Lidarr connects via HTTP internally (no TLS needed for local network).
 Added HTTP entrypoint for `api.lidarr.audio`.
+
+### 5. TheAudioDB (TADB) Image URL Migration (2025-12-27)
+
+**Problem:** TADB migrated their CDN from `theaudiodb.com` to `r2.theaudiodb.com` (Cloudflare R2). Lidarr's metadata API (`api.lidarr.audio`) was serving stale URL formats, causing 404 errors for artist artwork.
+
+**Background:**
+- 2019: TADB blocked Lidarr for excessive traffic without proper API auth
+- 2020: Lidarr created `images.lidarr.audio` proxy to cache TADB images
+- 2024-2025: TADB migrated CDN to Cloudflare R2
+- Result: Lidarr's `/v1/tadb/` proxy path became stale
+
+**URL Formats:**
+| Format | Example | Status |
+|--------|---------|--------|
+| Old proxy | `images.lidarr.audio/v1/tadb/artist/thumb/xxx.jpg` | 404 |
+| New proxy | `images.lidarr.audio/cache/https://r2.theaudiodb.com/images/media/artist/thumb/xxx.jpg` | 200 |
+| TADB direct | `r2.theaudiodb.com/images/media/artist/thumb/xxx.jpg` | 200 |
+
+**Solution:** Run `scripts/fix-tadb-urls.sh` to update stale URLs in Lidarr's database.
+
+**Note:** Lidarr's metadata API returns fanart.tv URLs for major artists (Beatles, Led Zeppelin, etc.) by design. TADB is used for artists not in fanart.tv's database.
 
 ## Services
 
